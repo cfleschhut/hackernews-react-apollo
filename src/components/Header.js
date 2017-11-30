@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { withRouter } from 'react-router';
 import { GC_USER_ID, GC_AUTH_TOKEN } from '../constants';
 
-const Header = () => {
+const Header = (props) => {
   const userId = localStorage.getItem(GC_USER_ID);
 
   return (
@@ -30,7 +30,7 @@ const Header = () => {
             localStorage.removeItem(GC_USER_ID);
             localStorage.removeItem(GC_AUTH_TOKEN);
 
-            this.props.history.push(`/new/1`);
+            props.history.push('/');
           }}>
             Logout
           </div> :
