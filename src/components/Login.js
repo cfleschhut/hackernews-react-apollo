@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { graphql, compose } from 'react-apollo';
 import gql from 'graphql-tag';
-import { GC_USER_ID, GC_AUTH_TOKEN } from '../constants';
+import { AUTH_TOKEN } from '../constants';
 
 class Login extends Component {
   constructor() {
@@ -9,86 +9,106 @@ class Login extends Component {
 
     this.state = {
       login: true,
+      name: '',
       email: '',
-      password: '',
-      name: ''
+      password: ''
     };
   }
 
+  _handleChange = ({ target: { name, value } }) => {
+    this.setState({
+      [name]: value
+    });
+  }
+
+  _toggleLogin = () => {
+    this.setState({
+      login: !this.state.login
+    });
+  }
+
   _confirm = async () => {
-    const { name, email, password } = this.state;
-    if (this.state.login) {
-      const result = await this.props.authenticateUserMutation({
-        variables: {
-          email,
-          password
-        }
-      });
-      const { id, token } = result.data.authenticateUser;
-      this._saveUserData(id, token);
-    } else {
-      const result = await this.props.signupUserMutation({
+    const { login, name, email, password } = this.state;
+
+    if (!login) {
+      const result = await this.props.signupMutation({
         variables: {
           name,
           email,
           password
         }
       });
-      const { id, token } = result.data.signupUser;
-      this._saveUserData(id, token);
+      const { token } = result.data.signup;
+
+      this._saveUserData(token);
     }
+
+    if (login) {
+      const result = await this.props.loginMutation({
+        variables: {
+          email,
+          password
+        }
+      });
+      const { token } = result.data.login;
+
+      this._saveUserData(token);
+    }
+
     this.props.history.push('/');
   }
 
-  _saveUserData = (id, token) => {
-    localStorage.setItem(GC_USER_ID, id);
-    localStorage.setItem(GC_AUTH_TOKEN, token);
+  _saveUserData = token => {
+    localStorage.setItem(AUTH_TOKEN, token);
   }
 
   render() {
+    const { login, name, email, password } = this.state;
+
     return (
       <div>
         <h4 className='mv3'>
-          {this.state.login ?
-            'Login' :
-            'Sign Up'
-          }
+          {login ? 'Login' : 'Sign Up'}
         </h4>
+
         <div className='flex flex-column'>
-          {!this.state.login &&
-            <input type='text'
-              value={this.state.name}
-              onChange={(e) => this.setState({ name: e.target.value })}
+          {!login &&
+            <input
+              type='text'
+              name='name'
+              value={name}
+              onChange={this._handleChange}
               placeholder='Your name'
             />
           }
-          <input type='text'
-            value={this.state.email}
-            onChange={(e) => this.setState({ email: e.target.value })}
+          <input
+            type='text'
+            name='email'
+            value={email}
+            onChange={this._handleChange}
             placeholder='Your email address'
           />
-          <input type='password'
-            value={this.state.password}
-            onChange={(e) => this.setState({ password: e.target.value })}
+          <input
+            type='password'
+            name='password'
+            value={password}
+            onChange={this._handleChange}
             placeholder='Choose a safe password'
           />
         </div>
+
         <div className='flex mt3'>
-          <div className='pointer mr2 button'
-            onClick={() => this._confirm()}
+          <div
+            className='button pointer mr2'
+            onClick={this._confirm}
           >
-            {this.state.login ?
-              'Login' :
-              'Create account'
-            }
+            {login ? 'Login' : 'Create account'}
           </div>
-          <div className='pointer button'
-            onClick={() => this.setState({ login: !this.state.login })}
+          <div
+            className='button pointer'
+            onClick={this._toggleLogin}
           >
-            {this.state.login ?
-              'Need to create an account?' :
-              'Already have an account?'
-            }
+            {login ? 'Need to create an account?' : 'Already have an account?' }
           </div>
         </div>
       </div>
@@ -96,32 +116,30 @@ class Login extends Component {
   }
 }
 
-const SIGNUP_USER_MUTATION = gql`
-  mutation SignupUserMutation($email: String!, $password: String!, $name: String!) {
-    signupUser(
+const SIGNUP_MUTATION = gql`
+  mutation SignupMutation($email: String!, $password: String!, $name: String!) {
+    signup(
       email: $email,
       password: $password,
       name: $name
     ) {
-      id
       token
     }
   }
 `;
 
-const AUTHENTICATE_USER_MUTATION = gql`
-  mutation AuthenticateUserMutation($email: String!, $password: String!) {
-    authenticateUser(
+const LOGIN_MUTATION = gql`
+  mutation LoginMutation($email: String!, $password: String!) {
+    login(
       email: $email,
       password: $password
     ) {
-      id
       token
     }
   }
 `;
 
 export default compose(
-  graphql(SIGNUP_USER_MUTATION, { name: 'signupUserMutation' }),
-  graphql(AUTHENTICATE_USER_MUTATION, { name: 'authenticateUserMutation' })
+  graphql(SIGNUP_MUTATION, { name: 'signupMutation' }),
+  graphql(LOGIN_MUTATION, { name: 'loginMutation' })
 )(Login);

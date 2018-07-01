@@ -1,10 +1,15 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { withRouter } from 'react-router';
-import { GC_USER_ID, GC_AUTH_TOKEN } from '../constants';
+import { AUTH_TOKEN } from '../constants';
 
 const Header = (props) => {
-  const userId = localStorage.getItem(GC_USER_ID);
+  const authToken = localStorage.getItem(AUTH_TOKEN);
+
+  const _logout = () => {
+    localStorage.removeItem(AUTH_TOKEN);
+    props.history.push('/');
+  };
 
   return (
     <div className="flex pa1 justify-between nowrap orange">
@@ -15,7 +20,7 @@ const Header = (props) => {
         <Link to="/" className="ml1 no-underline black">
           New
         </Link>
-        {userId &&
+        {authToken &&
           <div className="flex">
             <div className="ml1">|</div>
             <Link to="/create" className="ml1 no-underline black">
@@ -25,19 +30,18 @@ const Header = (props) => {
         }
       </div>
       <div className="flex flex-fixed">
-        {userId ?
-          <div className="ml1 pointer black" onClick={() => {
-            localStorage.removeItem(GC_USER_ID);
-            localStorage.removeItem(GC_AUTH_TOKEN);
-
-            props.history.push('/');
-          }}>
+        {authToken ? (
+          <div
+            className="ml1 pointer black"
+            onClick={_logout}
+          >
             Logout
-          </div> :
+          </div>
+        ) : (
           <Link to="/login" className="ml1 no-underline black">
             Login
           </Link>
-        }
+        )}
       </div>
     </div>
   );

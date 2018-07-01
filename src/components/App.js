@@ -1,9 +1,9 @@
 import React, { Component } from 'react';
 import { Switch, Route } from 'react-router-dom';
 import Header from './Header';
-import LinkList from './LinkList';
-import CreateLink from './CreateLink';
 import Login from './Login';
+import CreateLink from './CreateLink';
+import LinkList from './LinkList';
 
 class App extends Component {
   render() {

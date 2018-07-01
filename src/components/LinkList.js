@@ -5,35 +5,42 @@ import gql from 'graphql-tag';
 
 class LinkList extends Component {
   render() {
-    if (this.props.allLinksQuery && this.props.allLinksQuery.loading) {
-      return <div>Loading</div>;
+    const { feedQuery } = this.props;
+
+    if (feedQuery && feedQuery.loading) {
+      return <div>Loading…</div>;
     }
 
-    if (this.props.allLinksQuery && this.props.allLinksQuery.error) {
+    if (feedQuery && feedQuery.error) {
       return <div>Error</div>;
     }
 
-    const linksToRender = this.props.allLinksQuery.allLinks;
+    const linksToRender = feedQuery.feed.links;
 
     return (
       <div>
         {linksToRender.map(link => (
-          <Link key={link.id} link={link} />
+          <Link
+            key={link.id}
+            link={link}
+          />
         ))}
       </div>
     );
   }
 }
 
-const ALL_LINKS_QUERY = gql`
-  query AllLinksQuery {
-    allLinks {
-      id
-      createdAt
-      description
-      url
+const FEED_QUERY = gql`
+  query FeedQuery {
+    feed {
+      links {
+        id
+        createdAt
+        description
+        url
+      }
     }
   }
 `;
 
-export default graphql(ALL_LINKS_QUERY, { name: 'allLinksQuery' })(LinkList);
+export default graphql(FEED_QUERY, { name: 'feedQuery' })(LinkList);
