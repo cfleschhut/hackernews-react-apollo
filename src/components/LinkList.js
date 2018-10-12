@@ -6,19 +6,42 @@ import gql from 'graphql-tag';
 class LinkList extends Component {
   _updateCacheAfterVote(store, createVote, linkId) {
     const data = store.readQuery({ query: FEED_QUERY });
+
     const votedLink = data.feed.links.find(link => link.id === linkId);
     votedLink.votes = createVote.link.votes;
+
     store.writeQuery({ query: FEED_QUERY, data });
   }
 
+  _subscribeToNewLinks = subscribeToMore => {
+    subscribeToMore({
+      document: NEW_LINKS_SUBSCRIPTION,
+      updateQuery: (prev, { subscriptionData }) => {
+        if (!subscriptionData.data) return prev;
+        const newLink = subscriptionData.data.newLink.node;
+
+        return {
+          ...prev,
+          ...{
+            feed: {
+              links: [newLink, ...prev.feed.links],
+              count: prev.feed.links.length + 1,
+              __typename: prev.feed.__typename,
+            },
+          },
+        };
+      },
+    });
+  };
+
   render() {
     return (
-      <Query
-        query={FEED_QUERY}
-      >
-        {({ loading, error, data }) => {
-          if (loading) return <div>Fetching</div>
-          if (error) return <div>Error</div>
+      <Query query={FEED_QUERY}>
+        {({ loading, error, data, subscribeToMore }) => {
+          if (loading) return <div>Fetching</div>;
+          if (error) return <div>Error</div>;
+
+          this._subscribeToNewLinks(subscribeToMore);
 
           const linksToRender = data.feed.links;
 
@@ -48,6 +71,29 @@ export const FEED_QUERY = gql`
         createdAt
         description
         url
+        postedBy {
+          id
+          name
+        }
+        votes {
+          id
+          user {
+            id
+          }
+        }
+      }
+    }
+  }
+`;
+
+const NEW_LINKS_SUBSCRIPTION = gql`
+  subscription {
+    newLink {
+      node {
+        id
+        url
+        description
+        createdAt
         postedBy {
           id
           name

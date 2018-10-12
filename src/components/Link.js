@@ -19,7 +19,7 @@ const Link = ({ link, index, updateStoreAfterVote }) => {
               updateStoreAfterVote(store, vote, link.id)
             }
           >
-            {(voteMutation) => (
+            {voteMutation => (
               <div className="ml1 gray f11" onClick={voteMutation}>
                 ▲
               </div>
@@ -33,15 +33,13 @@ const Link = ({ link, index, updateStoreAfterVote }) => {
         </div>
         <div className="f6 lh-copy gray">
           {link.votes.length} votes | by{' '}
-          {link.postedBy
-            ? link.postedBy.name
-            : 'Unknown'}{' '}
+          {link.postedBy ? link.postedBy.name : 'Unknown'}{' '}
           {moment(link.createdAt).fromNow()}
         </div>
       </div>
     </div>
   );
-}
+};
 
 const VOTE_MUTATION = gql`
   mutation VoteMutation($linkId: ID!) {
