@@ -6,14 +6,14 @@ import Link from './Link';
 class Search extends Component {
   state = {
     links: [],
-    filter: ''
+    filter: '',
   };
 
   _executeSearch = async () => {
     const { filter } = this.state;
     const result = await this.props.client.query({
       query: FEED_SEARCH_QUERY,
-      variables: { filter }
+      variables: { filter },
     });
     const links = result.data.feed.links;
     this.setState({ links });
@@ -25,9 +25,9 @@ class Search extends Component {
         <div>
           <input
             type="text"
-            onChange={(e) => this.setState({ filter: e.target.value })}
+            onChange={e => this.setState({ filter: e.target.value })}
           />
-          <button onClick={() => this._executeSearch()}>Search</button>
+          <button onClick={this._executeSearch}>Search</button>
         </div>
         {this.state.links.map((link, index) => (
           <Link key={link.id} link={link} index={index} />
