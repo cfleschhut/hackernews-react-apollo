@@ -10,10 +10,13 @@ class LinkList extends Component {
     const votedLink = data.feed.links.find(link => link.id === linkId);
     votedLink.votes = createVote.link.votes;
 
-    store.writeQuery({ query: FEED_QUERY, data });
+    store.writeQuery({
+      query: FEED_QUERY,
+      data,
+    });
   }
 
-  _subscribeToNewLinks = subscribeToMore => {
+  _subscribeToNewLinks(subscribeToMore) {
     subscribeToMore({
       document: NEW_LINKS_SUBSCRIPTION,
       updateQuery: (prev, { subscriptionData }) => {
@@ -32,7 +35,13 @@ class LinkList extends Component {
         };
       },
     });
-  };
+  }
+
+  _subscribeToNewVotes(subscribeToMore) {
+    subscribeToMore({
+      document: NEW_VOTES_SUBSCRIPTION,
+    });
+  }
 
   render() {
     return (
@@ -42,6 +51,7 @@ class LinkList extends Component {
           if (error) return <div>Error</div>;
 
           this._subscribeToNewLinks(subscribeToMore);
+          this._subscribeToNewVotes(subscribeToMore);
 
           const linksToRender = data.feed.links;
 
@@ -103,6 +113,35 @@ const NEW_LINKS_SUBSCRIPTION = gql`
           user {
             id
           }
+        }
+      }
+    }
+  }
+`;
+
+const NEW_VOTES_SUBSCRIPTION = gql`
+  subscription {
+    newVote {
+      node {
+        id
+        link {
+          id
+          url
+          description
+          createdAt
+          postedBy {
+            id
+            name
+          }
+          votes {
+            id
+            user {
+              id
+            }
+          }
+        }
+        user {
+          id
         }
       }
     }

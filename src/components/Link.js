@@ -29,7 +29,7 @@ const Link = ({ link, index, updateStoreAfterVote }) => {
       </div>
       <div className="ml1">
         <div>
-          {link.description} ({link.url})
+          {link.description} (<a href={link.url}>{link.url}</a>)
         </div>
         <div className="f6 lh-copy gray">
           {link.votes.length} votes | by{' '}
